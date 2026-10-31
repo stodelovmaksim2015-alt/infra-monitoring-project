@@ -1,0 +1,37 @@
+
+name: CI - Bash Scripts
+
+on:
+  push:
+    branches:
+      - feature/monitoring
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Validate and Test Scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Check Bash syntax
+        run: |
+          bash -n check_api.sh
+          bash -n analyze_logs.sh
+
+      - name: Test API availability
+        run: |
+          ./check_api.sh https://httpbin.org/status/200
+
+      - name: Test log analyzer
+        run: |
+          ./analyze_logs.sh
+          test "$(wc -l < access.log)" -ge 300
